@@ -3,7 +3,7 @@ from game import Game
 from ui import UI, Button
 
 pygame.init()
-WIDTH, HEIGHT = 1280, 720
+WIDTH, HEIGHT = 800, 600
 CELL_SIZE = 20
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
