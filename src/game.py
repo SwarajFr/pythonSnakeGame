@@ -1,6 +1,7 @@
 import pygame
 from snake import Snake
 from food import Food
+from wall import WallManager
 
 class Game:
     def __init__(self, width, height, cell_size):
@@ -12,8 +13,10 @@ class Game:
     def reset(self):
         start_x = (self.width // (2 * self.cell_size)) * self.cell_size
         start_y = (self.height // (2 * self.cell_size)) * self.cell_size
-        self.snake = Snake(self.cell_size, [start_x, start_y])
+        self.snake = Snake(self.cell_size, (start_x, start_y))
         self.food = Food(self.cell_size, self.width, self.height)
+        self.walls = WallManager(self.cell_size, self.width, self.height)
+        self.food.position = self.food.random_position(self.snake.segments, self.walls.walls)
         self.score = 0
         self.game_over = False
 
@@ -31,22 +34,22 @@ class Game:
     def update(self):
         if self.game_over:
             return
-
         self.snake.move()
-
-        if self.snake.segments[0] == self.food.position:
-            self.snake.grow()
-            self.food.position = self.food.random_position()
-            self.score += 1
-
         head = self.snake.segments[0]
+        if head == self.food.position:
+            self.snake.grow()
+            self.score += 1
+            self.walls.add_wall_in_front(head, self.snake.direction, self.food.position, self.snake.segments)
+            self.food.position = self.food.random_position(self.snake.segments, self.walls.walls)
         if (head[0] < 0 or head[0] >= self.width or
             head[1] < 0 or head[1] >= self.height):
             self.game_over = True
-
         if head in self.snake.segments[1:]:
+            self.game_over = True
+        if head in self.walls.walls:
             self.game_over = True
 
     def draw(self, surface):
         self.snake.draw(surface)
         self.food.draw(surface)
+        self.walls.draw(surface)
